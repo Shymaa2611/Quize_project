@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz: {{ quiz.name }}</title>
+  {% load static %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+  <link rel="stylesheet" href="{% static 'quizzes/style.css' %}">
+</head>
+<body>
+    <div class="container">
+    <h1>Quiz: {{ quiz.name }}</h1>
+
+    <section class="question">
+    {% if question %}
+    <form id="question-form" action="{% url 'quizzes:grade_question' question.id %}" method="post">
+        {% csrf_token %}
+
+        <fieldset class="form-group">
+            <legend>{{ question.prompt }}</legend>
+            {% if question.freetextanswer %}
+            <div class="form-group">
+            <label for="answer">
+            {% if question.freetextanswer.case_sensitive %}
+            Type your answer in (capitalization matters!):
+            {% else %}
+            Type your answer in (don't worry about capitalization):
+            {% endif %}
+            </label>
+            <input type="text" name="answer" class="form-control">
+            </div>
+            {% else %}
+            {% for choice in question.multiplechoiceanswer.choices %}
+            <div class="radio">
+            <label>
+                <input type="radio" name="answer" value="{{ choice }}">
+                {{ choice}}
+            </label>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </fieldset>
+        <button type="submit" class="btn btn-primary">Check answers</button>
+    </form>
+
+    <div id="question-feedback" style="margin-top:16px">
+    </div>
+    {% else %}
+    Sorry, that question doesn't exist in this quiz.
+    {% endif %}
+    </section>
+
+    {% if next_question %}
+    <div style="margin-top:12px; font-size:16px">
+    <a href="{% url 'quizzes:display_question' quiz.id next_question.id %}">→ Next question</a>
+    </div>
+    {% endif %}
+    </div>
+
+    <script>
+    const form = document.getElementById("question-form");
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        fetch(form.action, {method:'post', body: new FormData(form)})
+            .then((response) => response.text())
+            .then(text => {
+                document.getElementById("question-feedback").innerHTML = text;
+            });
+    });
+    </script>
+</body>
+</html>
