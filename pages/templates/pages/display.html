@@ -14,7 +14,7 @@
 
     <section class="question">
     {% if question %}
-    <form id="question-form" action="{% url 'quizzes:grade_question' question.id %}" method="post">
+    <form id="question-form" action="{% url 'grade_question' question.id %}" method="post">
         {% csrf_token %}
 
         <fieldset class="form-group">

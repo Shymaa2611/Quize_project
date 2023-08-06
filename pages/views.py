@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import generic
@@ -9,15 +10,18 @@ class IndexView(generic.ListView):
     template_name = "pages/index.html"
 
 
-def display_quiz(request, quiz_id):
-    quiz = get_object_or_404(Quiz, pk=quiz_id)
+def display_quiz(request, id):
+    quiz = get_object_or_404(Quiz, id=id)
     question = quiz.question_set.first()
-    return redirect(reverse("pages:display_question", kwargs={"quiz_id": quiz_id, "question_id": question.pk}))
-
-
+    context={
+          "quiz_id": id, "question_id": question.id
+    }
+    if question is not None:
+        return render(request,'pages/display.html',context)
+    else:
+        return HttpResponse("No question found for this quiz.")
 def display_question(request, quiz_id, question_id):
     quiz = get_object_or_404(Quiz, pk=quiz_id)
-    # fetch ALL of the questions to find current and next question
     questions = quiz.question_set.all()
     current_question, next_question = None, None
     for ind, question in enumerate(questions):
